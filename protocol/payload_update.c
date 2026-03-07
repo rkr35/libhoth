@@ -64,8 +64,8 @@ static int get_payload_update_version(struct libhoth_device* dev,
   return 0;
 }
 
-static int libhoth_payload_update_finalize(
-    struct libhoth_device* dev, uint8_t* pld_needs_reinitialization) {
+int libhoth_payload_update_finalize(struct libhoth_device* dev,
+                                    uint8_t* pld_needs_reinitialization) {
   uint8_t version;
   int status = get_payload_update_version(dev, &version);
 

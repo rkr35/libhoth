@@ -458,7 +458,6 @@ TEST_F(LibHothTest, payload_update_erase_cmd_test) {
     EXPECT_CALL(mock_, receive)
         .WillOnce(DoAll(CopyResp(&kDummy, 0), Return(LIBHOTH_OK)));
   }
-
   EXPECT_EQ(libhoth_payload_update_erase(&hoth_dev_, kOffset, kSize),
             PAYLOAD_UPDATE_OK);
 }
@@ -495,4 +494,52 @@ TEST_F(LibHothTest, payload_update_erase_cmd_range_overflow_test) {
 
   EXPECT_EQ(libhoth_payload_update_erase(&hoth_dev_, kOffset, kSize),
             PAYLOAD_UPDATE_INVALID_ARGS);
+}
+
+TEST_F(LibHothTest, libhoth_payload_update_finalize_v0) {
+  {
+    InSequence s;
+    static constexpr uint32_t kVersionMask = 0x1;
+    EXPECT_CALL(mock_, send(_, UsesCommand(HOTH_CMD_GET_CMD_VERSIONS), _))
+        .WillOnce(Return(LIBHOTH_OK));
+    EXPECT_CALL(mock_, receive)
+        .WillOnce(DoAll(CopyResp(&kVersionMask, sizeof(kVersionMask)),
+                        Return(LIBHOTH_OK)));
+
+    EXPECT_CALL(mock_, send(_, UsesCommandWithVersion(kCmd, 0), _))
+        .WillOnce(Return(LIBHOTH_OK));
+    EXPECT_CALL(mock_, receive)
+        .WillOnce(DoAll(CopyResp(&kDummy, 0), Return(LIBHOTH_OK)));
+  }
+  uint8_t pld_needs_reinit = 1;
+  // Version 0 doesn't support returning re-initialization status, so we expect
+  // 0.
+  EXPECT_EQ(libhoth_payload_update_finalize(&hoth_dev_, &pld_needs_reinit),
+            LIBHOTH_OK);
+  EXPECT_EQ(pld_needs_reinit, 0);
+}
+
+TEST_F(LibHothTest, libhoth_payload_update_finalize_v1) {
+  {
+    InSequence s;
+    static constexpr uint32_t kVersionMask = 0x3;
+    EXPECT_CALL(mock_, send(_, UsesCommand(HOTH_CMD_GET_CMD_VERSIONS), _))
+        .WillOnce(Return(LIBHOTH_OK));
+    EXPECT_CALL(mock_, receive)
+        .WillOnce(DoAll(CopyResp(&kVersionMask, sizeof(kVersionMask)),
+                        Return(LIBHOTH_OK)));
+
+    static constexpr uint8_t kPldNeedsReinitialization = 1;
+    EXPECT_CALL(mock_, send(_, UsesCommandWithVersion(kCmd, 1), _))
+        .WillOnce(Return(LIBHOTH_OK));
+    EXPECT_CALL(mock_, receive)
+        .WillOnce(DoAll(CopyResp(&kPldNeedsReinitialization,
+                                 sizeof(kPldNeedsReinitialization)),
+                        Return(LIBHOTH_OK)));
+  }
+
+  uint8_t pld_needs_reinit = 0;
+  EXPECT_EQ(libhoth_payload_update_finalize(&hoth_dev_, &pld_needs_reinit),
+            LIBHOTH_OK);
+  EXPECT_EQ(pld_needs_reinit, 1);
 }

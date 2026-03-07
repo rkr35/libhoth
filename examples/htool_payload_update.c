@@ -253,7 +253,24 @@ int htool_payload_activate(const struct htool_invocation* inv) {
     return -1;
   }
 
-  printf("PLD needs re-initialization?: %d\n", pld_needs_reinitialization);
+  if (pld_needs_reinitialization != 0) {
+    printf("PLD updated. Re-initialization needed.\n");
+  }
+  return 0;
+}
+
+int htool_payload_finalize(const struct htool_invocation* inv) {
+  (void)inv;
+  uint8_t pld_needs_reinitialization = 0;
+  int ret = libhoth_payload_update_finalize(dev, &pld_needs_reinitialization);
+  if (ret != 0) {
+    fprintf(stderr, "Payload finalize failed, err code: %d\n", ret);
+    return ret;
+  }
+  printf("Payload finalize succeeded.\n");
+  if (pld_needs_reinitialization != 0) {
+    printf("PLD updated. Re-initialization needed.\n");
+  }
   return 0;
 }
 

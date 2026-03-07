@@ -1038,6 +1038,12 @@ static const struct htool_cmd CMDS[] = {
         .func = htool_payload_info,
     },
     {
+        .verbs = (const char*[]){"payload", "finalize", NULL},
+        .desc = "Verify the staging side. If valid, activate it for next boot.",
+        .params = (const struct htool_param[]){{}},
+        .func = htool_payload_finalize,
+    },
+    {
         .verbs = (const char*[]){"firmware_update",
                                  "update_from_flash_and_reset", NULL},
         .desc = "Installs a firmware update from a bundle staged in the "
