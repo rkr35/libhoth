@@ -274,7 +274,7 @@ int htool_payload_finalize(const struct htool_invocation* inv) {
   return 0;
 }
 
-int htool_payload_update_verify(const struct htool_invocation* inv) {
+int htool_payload_verify(const struct htool_invocation* inv) {
   struct libhoth_device* dev = htool_libhoth_device();
   if (!dev) {
     return -1;

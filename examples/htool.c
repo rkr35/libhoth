@@ -975,7 +975,7 @@ static const struct htool_cmd CMDS[] = {
                  .desc = "Verify only the image descriptor "
                          "(PAYLOAD_UPDATE_VERIFY_DESCRIPTOR)."},
                 {}},
-        .func = htool_payload_update_verify,
+        .func = htool_payload_verify,
     },
     {
         .verbs = (const char*[]){"payload", "status", NULL},
